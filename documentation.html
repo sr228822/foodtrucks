@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Endpoints</title>
+
+    <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1">
+
+    <link rel="stylesheet" type="text/css" href="https://d1a3f4spazzrp4.cloudfront.net/developer.uber.com/page.5aee5e53f1166c81bfd38bd6cd2cdf7c.css" />
+  </head>
+  <body>
+    <div class="page-wrapper layout soft-gutter">
+    <div class="layout__item three-quarters palm-one-whole lap-one-whole">
+
+    <div class="section" id="time-estimates">
+    <h2>Time Estimates</h2>
+    <p>The <em>Food Trucks</em> endpoint returns information for all food trucks
+    in a given location.</p>
+    <div class="section" id="id6">
+    <h3>Resource</h3>
+    <p class="blue-box"><tt class="docutils literal">GET /api/v1/foodtrucks</tt></p>
+    </div>
+    <div class="section" id="id8">
+    <h3>Query Parameters</h3>
+    <table border="1" class="docutils">
+    <colgroup>
+    <col width="41%" />
+    <col width="15%" />
+    <col width="44%" />
+    </colgroup>
+    <thead valign="bottom">
+    <tr><th class="head">Name</th>
+    <th class="head">Type</th>
+    <th class="head">Description</th>
+    </tr>
+    </thead>
+    <tbody valign="top">
+    <tr><td><tt class="docutils literal">start_latitude</tt></td>
+    <td><tt class="docutils literal">float</tt></td>
+    <td>Latitude component.</td>
+    </tr>
+    <tr><td><tt class="docutils literal">start_longitude</tt></td>
+    <td><tt class="docutils literal">float</tt></td>
+    <td>Longitude component.</td>
+    </tr>
+    <tr><td><tt class="docutils literal">customer_uuid</tt> (<em>optional</em>)</td>
+    <td><tt class="docutils literal">string</tt></td>
+    <td>Unique customer identifier
+    to be used for experience
+    customization.</td>
+    </tr>
+    <tr><td><tt class="docutils literal">product_id</tt> (<em>optional</em>)</td>
+    <td><tt class="docutils literal">string</tt></td>
+    <td>Unique identifier representing
+    a specific product for a given
+    latitude &amp; longitude.</td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    <div class="section" id="id9">
+    <h3>Response</h3>
+    <p><tt class="docutils literal"><span class="pre">Status-Code:</span> 200 OK</tt></p>
+    <div class="highlight"><pre><span class="p">{</span>
+    <span class="nt">&quot;times&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+        <span class="nt">&quot;product_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5f41547d-805d-4207-a297-51c571cf2a8c&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;display_name&quot;</span><span class="p">:</span> <span class="s2">&quot;UberBLACK&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;estimate&quot;</span><span class="p">:</span> <span class="mi">410</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+        <span class="nt">&quot;product_id&quot;</span><span class="p">:</span> <span class="s2">&quot;694558c9-b34b-4836-855d-821d68a4b944&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;display_name&quot;</span><span class="p">:</span> <span class="s2">&quot;UberSUV&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;estimate&quot;</span><span class="p">:</span> <span class="mi">535</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+        <span class="nt">&quot;product_id&quot;</span><span class="p">:</span> <span class="s2">&quot;65af3521-a04f-4f80-8ce2-6d88fb6648bc&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;display_name&quot;</span><span class="p">:</span> <span class="s2">&quot;uberTAXI&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;estimate&quot;</span><span class="p">:</span> <span class="mi">294</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+        <span class="nt">&quot;product_id&quot;</span><span class="p">:</span> <span class="s2">&quot;17b011d3-65be-421d-adf6-a5480a366453&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;display_name&quot;</span><span class="p">:</span> <span class="s2">&quot;uberX&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;estimate&quot;</span><span class="p">:</span> <span class="mi">288</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+    <span class="p">}</span>
+    </pre></div>
+    <table border="1" class="docutils">
+    <colgroup>
+    <col width="37%" />
+    <col width="16%" />
+    <col width="47%" />
+    </colgroup>
+    <thead valign="bottom">
+    <tr><th class="head">Name</th>
+    <th class="head">Type</th>
+    <th class="head">Description</th>
+    </tr>
+    </thead>
+    <tbody valign="top">
+    <tr><td><tt class="docutils literal">product_id</tt></td>
+    <td><tt class="docutils literal">string</tt></td>
+    <td>Unique identifier representing a
+    specific product for a given
+    latitude &amp; longitude. For example,
+    uberX in San Francisco will have a
+    different product_id than uberX
+    in Los Angeles.</td>
+    </tr>
+    <tr><td><tt class="docutils literal">display_name</tt></td>
+    <td><tt class="docutils literal">string</tt></td>
+    <td>Display name of product.</td>
+    </tr>
+    <tr><td><tt class="docutils literal">estimate</tt></td>
+    <td><tt class="docutils literal">int</tt></td>
+    <td>ETA for the product (in seconds).
+    Always show estimate in minutes.</td>
+    </tr>
+    </tbody>
+    </table>
+    </div>
+    </div>
+
+    </div>
+    </div>
+  </body>
+</html>
