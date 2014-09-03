@@ -63,23 +63,31 @@ data = [d for d in data if len(d['Latitude']) > 0 and len(d['Longitude']) > 0]
 @app.route('/api/v1/test')
 def tasks():
         args = request.args
-        eargs = [('lat',    True,  float),
-                 ('lng',    True,  float),
-                 ('radius', True,  float),
-                 ('type',   False, str),
-                 ('status', False, str),
-                 ('food',   False, str)]
+        # Args    TAG        Req    Type   Default
+        eargs = [('lat',     True,  float, None),
+                 ('lng',     True,  float, None),
+                 ('radius',  True,  float, None),
+                 ('type',    False, str,   None),
+                 ('status',  False, str,   None),
+                 ('food',    False, str,   None),
+                 ('page',    False, int,   0),
+                 ('perpage', False, int,   50)]
 
         # check the type of mandatory-ness of our args
         pargs = dict()
-        for tag, mandatory, etype in eargs:
+        for tag, req, etype, defv in eargs:
+            # store a default value if present
+            if devf:
+                pargs[tag] = devf
+            # If arg was passed in, check it's type
             if tag in args:
                 try:
                     val = etype(args[tag])
                     pargs[tag] = val
                 except:
                     return 'Argument ' + tag + ' malformed', 400
-            elif mandatory:
+            elif req:
+                # if arg was missing but required, error
                 return 'Missing required arg ' + tag, 400
 
         # Search our data based on location arguments
