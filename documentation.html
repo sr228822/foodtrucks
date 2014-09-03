@@ -37,25 +37,50 @@
     </tr>
     </thead>
     <tbody valign="top">
-    <tr><td><tt class="docutils literal">start_latitude</tt></td>
-    <td><tt class="docutils literal">float</tt></td>
-    <td>Latitude component.</td>
-    </tr>
-    <tr><td><tt class="docutils literal">start_longitude</tt></td>
-    <td><tt class="docutils literal">float</tt></td>
-    <td>Longitude component.</td>
-    </tr>
-    <tr><td><tt class="docutils literal">customer_uuid</tt> (<em>optional</em>)</td>
-    <td><tt class="docutils literal">string</tt></td>
-    <td>Unique customer identifier
-    to be used for experience
-    customization.</td>
-    </tr>
-    <tr><td><tt class="docutils literal">product_id</tt> (<em>optional</em>)</td>
-    <td><tt class="docutils literal">string</tt></td>
-    <td>Unique identifier representing
-    a specific product for a given
-    latitude &amp; longitude.</td>
+        <tr><td><tt class="docutils literal">start_lat</tt></td>
+        <td><tt class="docutils literal">float</tt></td>
+        <td>Latitude component of start location.</td>
+        </tr>
+
+        <tr><td><tt class="docutils literal">start_lng</tt></td>
+        <td><tt class="docutils literal">float</tt></td>
+        <td>Longitude component of start location.</td>
+        </tr>
+
+        <tr><td><tt class="docutils literal">end_lat</tt></td>
+        <td><tt class="docutils literal">float</tt></td>
+        <td>Latitude component of end location.</td>
+        </tr>
+
+        <tr><td><tt class="docutils literal">end_lng</tt></td>
+        <td><tt class="docutils literal">float</tt></td>
+        <td>Longitude component of end location.</td>
+        </tr>
+
+        <tr><td><tt class="docutils literal">type</tt> (<em>optional</em>)</td>
+        <td><tt class="docutils literal">string</tt></td>
+        <td>Filter results for a specific type of food truck. Valid values are "Truck" or "Push Cart"</td></tr>
+
+        <tr><td><tt class="docutils literal">status</tt> (<em>optional</em>)</td>
+        <td><tt class="docutils literal">string</tt></td>
+        <td>Filter results for a specific application status. Valid values are "APPROVED", "POSTAPPROVED", "REQUEST", "EXPIRED", "ONHOLD"</td></tr>
+
+        <tr><td><tt class="docutils literal">food</tt> (<em>optional</em>)</td>
+        <td><tt class="docutils literal">string</tt></td>
+        <td>Filter results that contain this string in their declared food items</td></tr>
+
+        <tr><td><tt class="docutils literal">perpage</tt> (<em>optional</em>)</td>
+        <td><tt class="docutils literal">int</tt></td>
+        <td>Number of results per page (default is 50)</td></tr>
+
+        <tr><td><tt class="docutils literal">page</tt> (<em>optional</em>)</td>
+        <td><tt class="docutils literal">int</tt></td>
+        <td>Page to request (default is 0)</td></tr>
+
+        <tr><td><tt class="docutils literal">sort</tt> (<em>optional</em>)</td>
+        <td><tt class="docutils literal">string</tt></td>
+        <td>How to sort results.  Valid values are "locationid" or "alphabetic".  Default is "locationid"</td></tr>
+
     </tr>
     </tbody>
     </table>
