@@ -71,7 +71,7 @@ def tasks():
         pargs = dict()
         for tag, req, etype, defv in eargs:
             # store a default value if present
-            if defv:
+            if (defv != None):
                 pargs[tag] = defv
             # If arg was passed in, check it's type
             if tag in args:
@@ -105,7 +105,14 @@ def tasks():
         else:
             return 'Unrecognized sort option ' + pargs['sort'], 400
 
-        return str(len(fdata))
+        pagestart = pargs['page'] * pargs['perpage']
+        pageend = pagestart + pargs['perpage']
+
+        pdata = sdata[pagestart:pageend]
+        for i in pdata:
+            print i['Applicant']
+
+        return str(len(pdata))
 
 if __name__ == '__main__':
 
