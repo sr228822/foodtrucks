@@ -100,9 +100,9 @@ def tasks():
 
         # Sort.  We have stored a default sort so this should be fine
         if pargs['sort'] == 'locationid':
-            sdata = sorted(fdata, key=lambda d: d['locationid'])
+            fdata = sorted(fdata, key=lambda d: d['locationid'])
         elif pargs['sort'] == 'alphabetic':
-            sdata = sorted(fdata, key=lambda d: d['Applicant'])
+            fdata = sorted(fdata, key=lambda d: d['Applicant'])
         else:
             return 'Unrecognized sort option ' + pargs['sort'], 400
 
@@ -110,11 +110,14 @@ def tasks():
         pagestart = pargs['page'] * pargs['perpage']
         pageend = pagestart + pargs['perpage']
 
-        pdata = sdata[pagestart:pageend]
-        for i in pdata:
-            print i['Applicant']
+        pdata = fdata[pagestart:pageend]
 
-        return str(len(pdata))
+        res = dict()
+        res['num_found'] = len(fdata)
+        res['num_returned'] = len(pdata)
+        res['results'] = pdata
+
+        return str(res)
 
 if __name__ == '__main__':
 
