@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import sys, csv
+from pprint import pprint
 from flask import Flask
 from flask import request
 import coords
@@ -8,22 +10,42 @@ import coords
 # Local helper functions
 #############################################################
 
-def read_csv_as_json(pth, desired_fields):
-    f = open(pth)
-    allrows = f.read().rstrip().split('\n')
-    f.close()
-    headings = allrows[0].split(',')
+def autoparse(v):
+    try:
+        vi = int(v)
+        return vi
+    except:
+        pass
+    try:
+        vf = float(v)
+        return vf
+    except:
+        pass
+    return v
+
+def read_csv_as_json(pth):
     res = []
-    for row in allrows[1:]:
-        cols = row.split(',')
-        row_json = dict()
-        for i in range(len(headings)):
-            if headings[i] in desired_fields:
-                row_json[headings[i]] = cols[i]
-        res.append(row_json)
+    with open(pth, 'rU') as f:
+        reader = csv.reader(f)
+        col_lab = reader.next()
+        for row in reader:
+            row_json = dict()
+            for i in range(len(col_lab)):
+                row_json[col_lab[i]] = autoparse(row[i])
+            res.append(row_json)
     return res
 
-def search_data(data, lat, lng, radius):
+def get_latlng(d):
+    return (float(d['Latitude']), float(d['Longitude']))
+
+def search_data(data, tgt_lat, tgt_lng, radius):
+    for d in data:
+        try:
+            print coords.dist((tgt_lat, tgt_lng), get_latlng(d))
+        except:
+            print 'failed on ' + str(d)
+            sys.exit(1)
+    #return [d for d in data if coords.dist((tgt_lat, tgt_lng), get_latlng(d)) < radius]
     return None
 
 #############################################################
@@ -33,8 +55,10 @@ def search_data(data, lat, lng, radius):
 app = Flask(__name__)
 
 # read data from a csv, storing as a json
-desired_fields = ['locationid', 'Applicant', 'FacilityType', 'LocationDescription', 'Address', 'Status', 'Latitude', 'Longitude']
-data = read_csv_as_json('./data.csv', desired_fields)
+data = read_csv_as_json('./data.csv')
+
+# filter out results without a lat or lng
+data = [d for d in data if len(d['Latitude']) > 0 and len(d['Longitude']) > 0]
 
 @app.route('/api/v1/test')
 def tasks():
