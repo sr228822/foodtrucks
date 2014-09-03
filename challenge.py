@@ -4,7 +4,6 @@ import sys, csv
 from pprint import pprint
 from flask import Flask
 from flask import request
-import coords
 
 #############################################################
 # Local helper functions
@@ -65,7 +64,8 @@ def tasks():
                  ('status',    False, str,   None),
                  ('food',      False, str,   None),
                  ('page',      False, int,   0),
-                 ('perpage',   False, int,   50)]
+                 ('perpage',   False, int,   50),
+                 ('sort',      False, str,   'locationid')]
 
         # check the type of mandatory-ness of our args
         pargs = dict()
@@ -85,9 +85,27 @@ def tasks():
                 return 'Missing required arg ' + tag, 400
 
         # Search our data based on location arguments
-        sdata = search_data(data, pargs['start_lat'], pargs['start_lng'], pargs['end_lat'], pargs['end_lng'])
+        fdata = search_data(data, pargs['start_lat'], pargs['start_lng'], pargs['end_lat'], pargs['end_lng'])
 
-        return 'yay it worked, got ' + str(len(sdata))
+        # Filer data based on what filters we got
+        if 'type' in pargs:
+            fdata = [d for d in fdata if d['FacilityType'] == pargs['type']]
+
+        if 'status' in pargs:
+            fdata = [d for d in fdata if d['Status'] == pargs['status']]
+
+        if 'food' in pargs:
+            fdata = [d for d in fdata if pargs['food'].lower() in d['FoodItems']]
+
+        # Sort
+        if pargs['sort'] == 'locationid':
+            sdata = sorted(fdata, key=lambda d: d['locationid'])
+        elif pargs['sort'] == 'alphabetic':
+            sdata = sorted(fdata, key=lambda d: d['Applicant'])
+        else:
+            return 'Unrecognized sort option ' + pargs['sort'], 400
+
+        return str(len(fdata))
 
 if __name__ == '__main__':
 
