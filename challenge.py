@@ -2,12 +2,13 @@
 
 from flask import Flask
 from flask import request
+import coords
 
 #############################################################
 # Local helper functions
 #############################################################
 
-def read_csv(pth):
+def read_csv_as_json(pth, desired_fields):
     f = open(pth)
     allrows = f.read().rstrip().split('\n')
     f.close()
@@ -15,8 +16,15 @@ def read_csv(pth):
     res = []
     for row in allrows[1:]:
         cols = row.split(',')
-        res.append(cols)
-    return (headings, res)
+        row_json = dict()
+        for i in range(len(headings)):
+            if headings[i] in desired_fields:
+                row_json[headings[i]] = cols[i]
+        res.append(row_json)
+    return res
+
+def search_data(data, lat, lng, radius):
+    return None
 
 #############################################################
 # Flask interface
@@ -24,7 +32,9 @@ def read_csv(pth):
 
 app = Flask(__name__)
 
-headings, data = read_csv('./data.csv')
+# read data from a csv, storing as a json
+desired_fields = ['locationid', 'Applicant', 'FacilityType', 'LocationDescription', 'Address', 'Status', 'Latitude', 'Longitude']
+data = read_csv_as_json('./data.csv', desired_fields)
 
 @app.route('/api/v1/test')
 def tasks():
@@ -47,6 +57,9 @@ def tasks():
                     return 'Argument ' + tag + ' malformed', 400
             elif mandatory:
                 return 'Missing required arg ' + tag, 400
+
+        # Search our data based on location arguments
+        sdata = search_data(data, pargs['lat'], pargs['lng'], pargs['radius'])
 
         return 'yay it worked'
 
