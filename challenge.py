@@ -29,18 +29,24 @@ headings, data = read_csv('./data.csv')
 @app.route('/api/v1/test')
 def tasks():
         args = request.args
-        mandatory_args = ['lat', 'lng', 'radius']
+        eargs = [('lat',    True,  float),
+                 ('lng',    True,  float),
+                 ('radius', True,  float),
+                 ('type',   False, str),
+                 ('status', False, str),
+                 ('food',   False, str)]
 
-        # Check and retrieve the mandatory args
-        for a in mandatory_args:
-            if a not in args:
-                return 'Missing required arg ' + a, 400
-        try:
-            lat = float(args['lat'])
-            lng = float(args['lng'])
-            readius = float(args['radius'])
-        except:
-            return 'Required arg malformed', 400
+        # check the type of mandatory-ness of our args
+        pargs = dict()
+        for tag, mandatory, etype in eargs:
+            if tag in args:
+                try:
+                    val = etype(args[tag])
+                    pargs[tag] = val
+                except:
+                    return 'Argument ' + tag + ' malformed', 400
+            elif mandatory:
+                return 'Missing required arg ' + tag, 400
 
         return 'yay it worked'
 
