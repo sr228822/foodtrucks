@@ -17,6 +17,12 @@ def make_call(myparams):
     response = requests.get(endpoint, params=myparams)
     return response
 
+
+def get_results(p):
+    r = make_call(p)
+    js = json.loads(r.text)
+    return js["results"]
+
 #######################################################
 # Some simple sanity checks on a plain successfull call
 #######################################################
@@ -96,17 +102,11 @@ class ExpectingErrors(unittest.TestCase):
 # Test the sorting functionality
 #######################################################
 class SortTests(unittest.TestCase):
-    def get_results(sefl, p):
-        r = make_call(p)
-
-        # check the json data
-        js = json.loads(r.text)
-        return js["results"]
 
     def testLocationId(self):
         p = copy.deepcopy(def_param)
         p["sort"] = "locationid"
-        res = self.get_results(p)
+        res = get_results(p)
 
         lastid = -1
         # using strictly greater also checks for duplicate locationids
@@ -118,7 +118,7 @@ class SortTests(unittest.TestCase):
     def testLocationId(self):
         p = copy.deepcopy(def_param)
         p["sort"] = "alphabetic"
-        res = self.get_results(p)
+        res = get_results(p)
 
         lastname = ""
         for r in res:
@@ -164,6 +164,46 @@ class PaginateTests(unittest.TestCase):
         p['page'] = page
         num = self.get_num_returned(p)
         self.assertEqual(num, 0)
+
+#######################################################
+# Test the filter functionality
+#######################################################
+class FilterTests(unittest.TestCase):
+
+    def testFilterType(self):
+        p = copy.deepcopy(def_param)
+
+        numTotal = len(get_results(p))
+
+        p['type'] = 'Truck'
+        res = get_results(p)
+        for r in res:
+            self.assertEqual(r['FacilityType'], 'Truck')
+            numTrucks = len(res)
+
+        p['type'] = 'Push Cart'
+        res = get_results(p)
+        for r in res:
+            self.assertEqual(r['FacilityType'], 'Push Cart')
+            numPush = len(res)
+
+        self.assertLessEqual(numTrucks, numTotal)
+        self.assertLessEqual(numPush, numTotal)
+
+    def testFilterFood(self):
+        p = copy.deepcopy(def_param)
+
+        # test we can find a common food
+        p['food'] = 'Sandwich'
+        res = get_results(p)
+        for r in res:
+            good = 'Sandwich'.lower() in r['FoodItems'].lower()
+            self.assertEqual(good, 1)
+
+        # test that a fictional non-existant food returns nothing
+        p['food'] = 'chocolate frosted sugar bombs'
+        res = get_results(p)
+        self.assertEqual(len(res), 0)
 
 if __name__ == '__main__':
     unittest.main()
