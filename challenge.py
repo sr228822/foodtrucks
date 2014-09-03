@@ -1,9 +1,7 @@
 #!/usr/bin/python
 
-import sys, csv
-from pprint import pprint
-from flask import Flask
-from flask import request
+import sys, csv, json
+from flask import Flask, request
 
 #############################################################
 # Local helper functions
@@ -110,14 +108,15 @@ def tasks():
         pagestart = pargs['page'] * pargs['perpage']
         pageend = pagestart + pargs['perpage']
 
-        pdata = fdata[pagestart:pageend]
+        rdata = fdata[pagestart:pageend]
 
         res = dict()
         res['num_found'] = len(fdata)
-        res['num_returned'] = len(pdata)
-        res['results'] = pdata
+        res['num_returned'] = len(rdata)
+        res['results'] = rdata
 
-        return str(res)
+        #return json.dumps(res)
+        return json.dumps(res)
 
 if __name__ == '__main__':
 
