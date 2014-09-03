@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8">
 
-    <title>Endpoints</title>
+    <title>Food Trucks Uber Challenge</title>
 
     <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1">
 
@@ -14,7 +14,7 @@
     <div class="layout__item three-quarters palm-one-whole lap-one-whole">
 
     <div class="section" id="time-estimates">
-    <h2>Time Estimates</h2>
+    <h2>Food Trucks</h2>
     <p>The <em>Food Trucks</em> endpoint returns information for all food trucks
     in a given location.</p>
     <div class="section" id="id6">
@@ -89,7 +89,19 @@
     <p><tt class="docutils literal"><span class="pre">Status-Code:</span> 200 OK</tt></p>
     <div class="highlight"><pre>
 <span class="p">{</span>
+  <span class="nt">&quot;num_found&quot;</span><span class="p">:</span> <span class="p">62</span><span class="p">,</span>
+  <span class="nt">&quot;num_returned&quot;</span><span class="p">:</span> <span class="p">2</span><span class="p">,</span>
   <span class="nt">&quot;results&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;locationid&quot;</span><span class="p">:</span> <span class="mi">526212</span>
+      <span class="nt">&quot;Applicant&quot;</span><span class="p">:</span> <span class="s2">&quot;Faith Sandwich&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;Latitude&quot;</span><span class="p">:</span> <span class="mi">37.7888</span>
+      <span class="nt">&quot;Longitude&quot;</span><span class="p">:</span> <span class="mi">-122.3993</span>
+      <span class="nt">&quot;Address&quot;</span><span class="p">:</span> <span class="s2">&quot;560 MISSION ST&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;FacilityType&quot;</span><span class="p">:</span> <span class="s2">&quot;Push Cart&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;Status&quot;</span><span class="p">:</span> <span class="s2">&quot;APPROVED&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;LocationDescrption&quot;</span><span class="p">:</span> <span class="s2">&quot;MISSION ST: SHAW ALY to ANTHONY ST (543 - 586)&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;FoodItems&quot;</span><span class="p">:</span> <span class="s2">&quot;Vietnamese sandwiches: various meat rice plates&quot;</span><span class="p">,</span>
     <span class="p">{</span>
       <span class="nt">&quot;locationid&quot;</span><span class="p">:</span> <span class="mi">528125</span>
       <span class="nt">&quot;Applicant&quot;</span><span class="p">:</span> <span class="s2">&quot;Quan Catering&quot;</span><span class="p">,</span>
@@ -100,7 +112,7 @@
       <span class="nt">&quot;Status&quot;</span><span class="p">:</span> <span class="s2">&quot;APPROVED&quot;</span><span class="p">,</span>
       <span class="nt">&quot;LocationDescrption&quot;</span><span class="p">:</span> <span class="s2">&quot;LANE ST: VAN DYKE AVE to 03RD ST (2100 - 2199)&quot;</span><span class="p">,</span>
       <span class="nt">&quot;FoodItems&quot;</span><span class="p">:</span> <span class="s2">&quot;Cold Truck: Soft drinks: cup cakes:&quot;</span><span class="p">,</span>
-    <span class="p">},</span>
+    <span class="p">}</span>
   <span class="p">]</span>
 <span class="p">}</span>
     </pre></div>
@@ -117,23 +129,49 @@
     </tr>
     </thead>
     <tbody valign="top">
-    <tr><td><tt class="docutils literal">product_id</tt></td>
-    <td><tt class="docutils literal">string</tt></td>
-    <td>Unique identifier representing a
-    specific product for a given
-    latitude &amp; longitude. For example,
-    uberX in San Francisco will have a
-    different product_id than uberX
-    in Los Angeles.</td>
+    <tr><td><tt class="docutils literal">num_found</tt></td>
+        <td><tt class="docutils literal">int</tt></td>
+        <td>Total results matching the location and filters</td>
     </tr>
-    <tr><td><tt class="docutils literal">display_name</tt></td>
-    <td><tt class="docutils literal">string</tt></td>
-    <td>Display name of product.</td>
+    <tr><td><tt class="docutils literal">num_returned</tt></td>
+        <td><tt class="docutils literal">int</tt></td>
+        <td>Results returned in this request, affected by pagination</td>
     </tr>
-    <tr><td><tt class="docutils literal">estimate</tt></td>
-    <td><tt class="docutils literal">int</tt></td>
-    <td>ETA for the product (in seconds).
-    Always show estimate in minutes.</td>
+    <tr><td><tt class="docutils literal">locationid</tt></td>
+        <td><tt class="docutils literal">int</tt></td>
+        <td>A unique id for this vehicle</td>
+    </tr>
+    <tr><td><tt class="docutils literal">Applicant</tt></td>
+        <td><tt class="docutils literal">string</tt></td>
+        <td>Name of the food vehicle operator</td>
+    </tr>
+    <tr><td><tt class="docutils literal">Latitude</tt></td>
+        <td><tt class="docutils literal">float</tt></td>
+        <td>Latitude coordinate of this vehicle</td>
+    </tr>
+    <tr><td><tt class="docutils literal">Longitude</tt></td>
+        <td><tt class="docutils literal">float</tt></td>
+        <td>Longitude coordinate of this vehicle</td>
+    </tr>
+    <tr><td><tt class="docutils literal">Address</tt></td>
+        <td><tt class="docutils literal">string</tt></td>
+        <td>Exact registration address of this vehicle</td>
+    </tr>
+    <tr><td><tt class="docutils literal">FacilityType</tt></td>
+        <td><tt class="docutils literal">string</tt></td>
+        <td>The subclass of food-service-vehicle</td>
+    </tr>
+    <tr><td><tt class="docutils literal">Status</tt></td>
+        <td><tt class="docutils literal">string</tt></td>
+        <td>Current status of the registration of this vehicle</td>
+    </tr>
+    <tr><td><tt class="docutils literal">LocationDescrption</tt></td>
+        <td><tt class="docutils literal">string</tt></td>
+        <td>Range of addresses this vehicle may operate on</td>
+    </tr>
+    <tr><td><tt class="docutils literal">FoodItems</tt></td>
+        <td><tt class="docutils literal">string</tt></td>
+        <td>List of food items this vehicle serves</td>
     </tr>
     </tbody>
     </table>
