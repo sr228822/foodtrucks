@@ -52,7 +52,7 @@ data = read_csv_as_json('./data.csv')
 # filter out results without a lat or lng
 data = [d for d in data if type(d['Latitude']) == float and type(d['Longitude']) == float]
 
-@app.route('/api/v1/test')
+@app.route('/api/v1/foodtrucks')
 def tasks():
         args = request.args
         # Args    TAG        Req    Type   Default
@@ -85,7 +85,8 @@ def tasks():
                 return 'Missing required arg ' + tag, 400
 
         # Search our data based on location arguments
-        fdata = search_data(data, pargs['start_lat'], pargs['start_lng'], pargs['end_lat'], pargs['end_lng'])
+        fdata = search_data(data, pargs['start_lat'], pargs['start_lng'],
+                                  pargs['end_lat'], pargs['end_lng'])
 
         # Filer data based on what filters we got
         if 'type' in pargs:
@@ -97,7 +98,7 @@ def tasks():
         if 'food' in pargs:
             fdata = [d for d in fdata if pargs['food'].lower() in d['FoodItems']]
 
-        # Sort
+        # Sort.  We have stored a default sort so this should be fine
         if pargs['sort'] == 'locationid':
             sdata = sorted(fdata, key=lambda d: d['locationid'])
         elif pargs['sort'] == 'alphabetic':
@@ -105,6 +106,7 @@ def tasks():
         else:
             return 'Unrecognized sort option ' + pargs['sort'], 400
 
+        # Paginate, again we have default pagination
         pagestart = pargs['page'] * pargs['perpage']
         pageend = pagestart + pargs['perpage']
 
