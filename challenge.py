@@ -38,15 +38,8 @@ def read_csv_as_json(pth):
 def get_latlng(d):
     return (float(d['Latitude']), float(d['Longitude']))
 
-def search_data(data, tgt_lat, tgt_lng, radius):
-    for d in data:
-        try:
-            print coords.dist((tgt_lat, tgt_lng), get_latlng(d))
-        except:
-            print 'failed on ' + str(d)
-            sys.exit(1)
-    #return [d for d in data if coords.dist((tgt_lat, tgt_lng), get_latlng(d)) < radius]
-    return None
+def search_data(data, start_lat, start_lng, end_lat, end_lng):
+    return [d for d in data if (start_lat < d['Latitude'] < end_lat) and (start_lng < d['Longitude'] < end_lng)]
 
 #############################################################
 # Flask interface
@@ -58,27 +51,28 @@ app = Flask(__name__)
 data = read_csv_as_json('./data.csv')
 
 # filter out results without a lat or lng
-data = [d for d in data if len(d['Latitude']) > 0 and len(d['Longitude']) > 0]
+data = [d for d in data if type(d['Latitude']) == float and type(d['Longitude']) == float]
 
 @app.route('/api/v1/test')
 def tasks():
         args = request.args
         # Args    TAG        Req    Type   Default
-        eargs = [('lat',     True,  float, None),
-                 ('lng',     True,  float, None),
-                 ('radius',  True,  float, None),
-                 ('type',    False, str,   None),
-                 ('status',  False, str,   None),
-                 ('food',    False, str,   None),
-                 ('page',    False, int,   0),
-                 ('perpage', False, int,   50)]
+        eargs = [('start_lat', True,  float, None),
+                 ('start_lng', True,  float, None),
+                 ('end_lat',   True,  float, None),
+                 ('end_lng',   True,  float, None),
+                 ('type',      False, str,   None),
+                 ('status',    False, str,   None),
+                 ('food',      False, str,   None),
+                 ('page',      False, int,   0),
+                 ('perpage',   False, int,   50)]
 
         # check the type of mandatory-ness of our args
         pargs = dict()
         for tag, req, etype, defv in eargs:
             # store a default value if present
-            if devf:
-                pargs[tag] = devf
+            if defv:
+                pargs[tag] = defv
             # If arg was passed in, check it's type
             if tag in args:
                 try:
@@ -91,9 +85,9 @@ def tasks():
                 return 'Missing required arg ' + tag, 400
 
         # Search our data based on location arguments
-        sdata = search_data(data, pargs['lat'], pargs['lng'], pargs['radius'])
+        sdata = search_data(data, pargs['start_lat'], pargs['start_lng'], pargs['end_lat'], pargs['end_lng'])
 
-        return 'yay it worked'
+        return 'yay it worked, got ' + str(len(sdata))
 
 if __name__ == '__main__':
 
