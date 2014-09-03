@@ -47,13 +47,10 @@ app = Flask(__name__)
 # read data from a csv, storing as a json
 data = read_csv_as_json('./data.csv')
 
-# filter out results without a lat or lng
-data = [d for d in data if type(d['Latitude']) == float and type(d['Longitude']) == float]
-
 @app.route('/api/v1/foodtrucks')
 def tasks():
         args = request.args
-        # Args    TAG        Req    Type   Default
+        #          TAG         Req    Type   Default
         eargs = [('start_lat', True,  float, None),
                  ('start_lng', True,  float, None),
                  ('end_lat',   True,  float, None),
@@ -119,6 +116,4 @@ def tasks():
         return json.dumps(res)
 
 if __name__ == '__main__':
-
-
     app.run(debug = True)
