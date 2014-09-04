@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
-import unittest, copy, requests, json
+import unittest, copy, requests, json, sys
 
-endpoint = 'http://localhost:5000/api/v1/foodtrucks'
+host='http://localhost:5000'
+apiroute = '/api/v1/foodtrucks'
+endpoint = host + apiroute
 
-# A set of default params which should return a large list
+# A set of default params which should return a large set of results
 def_param = { 'start_lat': 36.6,
               'end_lat'  : 37.8,
               'start_lng': -122.6,
@@ -13,20 +15,23 @@ def_param = { 'start_lat': 36.6,
               'page'     : 0
             }
 
+# A helper method to make the actual call through requests
 def make_call(myparams):
     response = requests.get(endpoint, params=myparams)
     return response
 
-
+# A helper method which results just the resulst dict from the call
 def get_results(p):
     r = make_call(p)
     js = json.loads(r.text)
     return js["results"]
 
 #######################################################
-# Some simple sanity checks on a plain successfull call
+# Some simple sanity checks on geo filtering
 #######################################################
 class BasicTests(unittest.TestCase):
+
+    # A basic call with our def params which should succeed
     def testBasicCall(self):
         # Make a simple call
         p = copy.deepcopy(def_param)
@@ -50,6 +55,7 @@ class BasicTests(unittest.TestCase):
         self.assertEqual(numf, numr)
         self.assertEqual(numr, len(res))
 
+    # Create a query which should succeed but return nothing due to zero-area box
     def testEmptyResults(self):
         p = copy.deepcopy(def_param)
         # this should make our box contain nothing
@@ -78,21 +84,26 @@ class BasicTests(unittest.TestCase):
 # Check for some simple errors in the params
 #######################################################
 class ExpectingErrors(unittest.TestCase):
+
+    # A helper method to assert that we received an error code
     def expectError(self, p, ecode):
         r = make_call(p)
         code = r.status_code
         self.assertEqual(code, ecode)
 
+    # start_lat is a mandatory parameter, lacking it should fail
     def testMissingLat(self):
         p = copy.deepcopy(def_param)
         del p['start_lat']
         self.expectError(p, 400)
 
+    # start_lat expects a float, passing a string should fail
     def testMalformedLat(self):
         p = copy.deepcopy(def_param)
         p['start_lat'] = 'potatoe'
         self.expectError(p, 400)
 
+    # Sort is a string, but only accepts certain values, a diff value should fail
     def testMalformedSort(self):
         p = copy.deepcopy(def_param)
         p['sort'] = 'potatoe'
@@ -103,19 +114,21 @@ class ExpectingErrors(unittest.TestCase):
 #######################################################
 class SortTests(unittest.TestCase):
 
-    def testLocationId(self):
+    # Verifying that sorting by locationid produces sequentially increasing loc ids
+    def testSortLocationId(self):
         p = copy.deepcopy(def_param)
         p["sort"] = "locationid"
         res = get_results(p)
 
         lastid = -1
-        # using strictly greater also checks for duplicate locationids
         for r in res:
             thisid = r["locationid"]
+            # using strictly greater also checks for duplicate locationids
             self.assertGreater(thisid, lastid)
             lastid = thisid
 
-    def testLocationId(self):
+    # Verify that sorting by alphabetic produces sequentially increasing applicant names
+    def testSortAlphabetic(self):
         p = copy.deepcopy(def_param)
         p["sort"] = "alphabetic"
         res = get_results(p)
@@ -123,6 +136,7 @@ class SortTests(unittest.TestCase):
         lastname = ""
         for r in res:
             thisname = r["Applicant"]
+            # duplicate names are okay
             self.assertGreaterEqual(thisname, lastname)
             lastname = thisname
 
@@ -130,6 +144,8 @@ class SortTests(unittest.TestCase):
 # Test the pagination functionality
 #######################################################
 class PaginateTests(unittest.TestCase):
+
+    # A helper method which returns the number of results found
     def get_num_returned(self, p):
         r = make_call(p)
 
@@ -141,6 +157,10 @@ class PaginateTests(unittest.TestCase):
         self.assertEqual(numr, len(res))
         return numr
 
+    # A pagination test.  We query a large data set with 10-item pages
+    #   page=0 should return 10 results
+    #   following pages should return <= 10 results
+    #   after our first < 10 result, the next page should be empty
     def testPagination(self):
         p = copy.deepcopy(def_param)
         page = 0
@@ -153,14 +173,15 @@ class PaginateTests(unittest.TestCase):
 
         # we expect a pattern of 10 pages consistently
         while True:
-            p['page'] = page
             page += 1
+            p['page'] = page
             num = self.get_num_returned(p)
             self.assertLessEqual(num, 10)
             if num < 10:
                 break
 
         # now, on the next page, there should be nothing
+        page += 1
         p['page'] = page
         num = self.get_num_returned(p)
         self.assertEqual(num, 0)
@@ -170,6 +191,8 @@ class PaginateTests(unittest.TestCase):
 #######################################################
 class FilterTests(unittest.TestCase):
 
+    # Verify that when we filter to facility type, we only get results
+    # with that type back. Each subset should be less than our full set
     def testFilterType(self):
         p = copy.deepcopy(def_param)
 
@@ -190,6 +213,8 @@ class FilterTests(unittest.TestCase):
         self.assertLessEqual(numTrucks, numTotal)
         self.assertLessEqual(numPush, numTotal)
 
+    # Verify that when we filter by food items, we only get results
+    # whose food items include the search string
     def testFilterFood(self):
         p = copy.deepcopy(def_param)
 
