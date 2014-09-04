@@ -2,7 +2,8 @@
 
 import unittest, copy, requests, json, sys
 
-host='http://localhost:5000'
+#host='http://localhost:5000'
+host='http://ec2.sfflux.com'
 apiroute = '/api/v1/foodtrucks'
 endpoint = host + apiroute
 
@@ -164,20 +165,21 @@ class PaginateTests(unittest.TestCase):
     def testPagination(self):
         p = copy.deepcopy(def_param)
         page = 0
-        p['perpage'] = 10
+        perpage = 13
+        p['perpage'] = perpage
 
         # We expect 10 results on the initial page
         p['page'] = page
         num = self.get_num_returned(p)
-        self.assertEqual(num, 10)
+        self.assertEqual(num, perpage)
 
         # we expect a pattern of 10 pages consistently
         while True:
             page += 1
             p['page'] = page
             num = self.get_num_returned(p)
-            self.assertLessEqual(num, 10)
-            if num < 10:
+            self.assertLessEqual(num, perpage)
+            if num < perpage:
                 break
 
         # now, on the next page, there should be nothing
