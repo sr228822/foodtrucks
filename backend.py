@@ -45,7 +45,11 @@ def search_data(data, start_lat, start_lng, end_lat, end_lng):
 app = Flask(__name__)
 
 # read data from a csv, storing as a json
-data = read_csv_as_json('./data.csv')
+data = read_csv_as_json('/home/ubuntu/foodtrucks/data.csv')
+
+@app.route('/')
+def hello_world():
+    return 'Hello Flask World!'
 
 @app.route('/api/v1/foodtrucks')
 def tasks():
@@ -116,4 +120,4 @@ def tasks():
         return json.dumps(res)
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = False)
