@@ -1,6 +1,6 @@
 var map;
 
-var endpoint = 'http://ec2.sfflux.com:4444/api/v1/foodtrucks'
+var endpoint = 'http://ec2.sfflux.com/api/v1/foodtrucks'
 
 // List of all gmap markers
 var markers = [];
@@ -29,7 +29,7 @@ function refreshMap(force) {
 /* Make a call to our backend api */
 function apiRequest(start_lat, start_lng, end_lat, end_lng, query) {
     $(document).ready(function() {
-        $.get(endpoint + "?start_lat=" + start_lat + "&start_lng=" + start_lng + "&end_lat=" + end_lat + "&end_lng=" + end_lng + "&query=" + query ,function(data) {parseAndDraw(data);});
+        $.get(endpoint + "?start_lat=" + start_lat + "&start_lng=" + start_lng + "&end_lat=" + end_lat + "&end_lng=" + end_lng + "&perpage=5000&query=" + query ,function(data) {parseAndDraw(data);});
     });
 }
 
@@ -43,6 +43,7 @@ function parseAndDraw(data)
     // parse data-json into a list of markers
     var js = JSON.parse(data);
     var num = js.num_returned;
+    console.log("Got " + num + " trucks");
     for(var i=0; i < num; i++) {
         var truck = js.results[i];
         var name = truck.Applicant;

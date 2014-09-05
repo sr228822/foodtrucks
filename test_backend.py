@@ -3,7 +3,7 @@
 import unittest, copy, requests, json, sys
 
 #host='http://localhost:5000'
-host='http://ec2.sfflux.com:4444'
+host='http://ec2.sfflux.com'
 apiroute = '/api/v1/foodtrucks'
 endpoint = host + apiroute
 
