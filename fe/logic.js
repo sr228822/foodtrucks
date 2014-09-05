@@ -50,7 +50,20 @@ function parseAndDraw(data)
             position: latlng,
             title:name,
         });
-        // TODO attach a pop-up with more info on this truck?
+
+        var contentStr = '<h3>' + name + '</h3>' +
+                      truck.Address + '<br>' +
+                      truck.FoodItems;
+        var infowindow = new google.maps.InfoWindow({
+            content: contentStr
+        });
+        google.maps.event.addListener(marker, 'click', (function(marker,contentStr,infowindow){
+            return function() {
+                infowindow.setContent(contentStr);
+                infowindow.open(map,marker);
+            };
+        })(marker,contentStr,infowindow));
+
         markers.push(marker);
     }
 
