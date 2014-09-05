@@ -141,7 +141,7 @@ def tasks():
             fdata = [d for d in fdata if d['Status'] == pargs['status']]
 
         if 'food' in pargs:
-            fdata = [d for d in fdata if pargs['food'].lower() in d['FoodItems']]
+            fdata = [d for d in fdata if pargs['food'].lower() in d['FoodItems'].lower()]
 
         # Sort.  We have stored a default sort so this should be fine
         if pargs['sort'] == 'locationid':
