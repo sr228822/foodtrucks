@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import unittest, copy, requests, json, sys
+import unittest, copy, requests, json, sys, threading, Queue
 
 #host='http://localhost:5000'
 host='http://ec2.sfflux.com'
@@ -289,16 +289,37 @@ class FilterTests(unittest.TestCase):
 #######################################################
 # Simple stress test of multiple calls
 #######################################################
+def singleCall(p, q):
+    r = make_call(p)
+    code = r.status_code
+    q.put(code)
+
 class StressTests(unittest.TestCase):
 
-    # TODO can I send this in parallel, or at least non-blocking?
+    # Launch a large number of requests in parallel, make sure they all return 200
+    #  I've put in 10, so as not to hit ec2 pricing limits, but this could be made
+    #  arbitrarily large
     def testStress(self):
         p = copy.deepcopy(def_param)
+        q = Queue.Queue()
+        allthreads = []
+        numt = 10
 
-        for i in range(5):
-            r = make_call(p)
-            code = r.status_code
-            self.assertEqual(code, 200)
+        # launch a bunch of calls in threads
+        for i in range(numt):
+            t = threading.Thread(target=singleCall, args=(p,q))
+            t.daemon = True
+            t.start()
+            allthreads.append(t)
+
+        # wait for all calls to return
+        for t in allthreads:
+            t.join()
+
+        # check the return code of calls
+        for i in range(numt):
+            s = q.get()
+            self.assertEqual(s, 200)
 
 if __name__ == '__main__':
     unittest.main()
