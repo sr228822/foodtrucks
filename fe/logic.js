@@ -73,7 +73,7 @@ function parseAndDraw(data)
 
 function processQuery()
 {
-    query = document.getElementById('foodquery').value
+    query = document.getElementById('pac-input').value
     console.log("processing query " + query);
     refreshMap();
 }
@@ -85,6 +85,11 @@ function initialize() {
         zoom: 12
     };
     map = new google.maps.Map(document.getElementById("map-canvas"),mapOptions);
+
+      // Create the search box and link it to the UI element.
+  var input = /** @type {HTMLInputElement} */(
+      document.getElementById('pac-input'));
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
     // callback to refresh map when the bounds change
     google.maps.event.addListener(map, 'idle', function(event) {
