@@ -34,11 +34,9 @@ function apiRequest(start_lat, start_lng, end_lat, end_lng, query) {
 /* Called when we get our data back.  Parse the json results and draw them onto our map */
 function parseAndDraw(data)
 {
-    // Clear the previous markers
-    setMarkersMap(markers, null);
-    markers = [];
 
     // parse data-json into a list of markers
+    newMarkers = [];
     var js = JSON.parse(data);
     var num = js.num_returned;
     console.log("Got " + num + " trucks");
@@ -64,10 +62,12 @@ function parseAndDraw(data)
             };
         })(marker,contentStr,infowindow));
 
-        markers.push(marker);
+        newMarkers.push(marker);
     }
 
     // Draw all markers on the map
+    setMarkersMap(markers, null);
+    markers = newMarkers;
     setMarkersMap(markers, map);
 }
 
