@@ -84,7 +84,7 @@ class BasicTests(unittest.TestCase):
 #######################################################
 # Check for some simple errors in the params
 #######################################################
-class ExpectingErrors(unittest.TestCase):
+class BadArguments(unittest.TestCase):
 
     # A helper method to assert that we received an error code
     def expectError(self, p, ecode):
@@ -104,11 +104,37 @@ class ExpectingErrors(unittest.TestCase):
         p['start_lat'] = 'potatoe'
         self.expectError(p, 400)
 
+    # start_lat expects a float, passing an empty val should fail
+    def testEmptyLat(self):
+        p = copy.deepcopy(def_param)
+        p['start_lat'] = ''
+        self.expectError(p, 400)
+
     # Sort is a string, but only accepts certain values, a diff value should fail
     def testMalformedSort(self):
         p = copy.deepcopy(def_param)
         p['sort'] = 'potatoe'
         self.expectError(p, 400)
+
+#######################################################
+# Test that other types of requests fail
+#######################################################
+class BadRequests(unittest.TestCase):
+
+    # Post not allowed, only get
+    def testPost(self):
+        response = requests.post(endpoint)
+        self.assertEqual(response.status_code, 405)
+
+    # Put not allowed, only get
+    def testPut(self):
+        response = requests.put(endpoint)
+        self.assertEqual(response.status_code, 405)
+
+    # Delete not allowed, only get
+    def testDelete(self):
+        response = requests.delete(endpoint)
+        self.assertEqual(response.status_code, 405)
 
 #######################################################
 # Test the sorting functionality
@@ -158,20 +184,25 @@ class PaginateTests(unittest.TestCase):
         self.assertEqual(numr, len(res))
         return numr
 
-    # A pagination test.  We query a large data set with 10-item pages
-    #   page=0 should return 10 results
-    #   following pages should return <= 10 results
-    #   after our first < 10 result, the next page should be empty
+    # A pagination test.  We query a large data set with 13-item pages
+    #   page=0 should return 13 results
+    #   following pages should return <= 13 results
+    #   after our first < 13 result, the next page should be empty
     def testPagination(self):
         p = copy.deepcopy(def_param)
+        numTotal = len(get_results(p))
+        runningSum = 0
+
         page = 0
         perpage = 13
+        runningSum = 0
         p['perpage'] = perpage
 
         # We expect 10 results on the initial page
         p['page'] = page
         num = self.get_num_returned(p)
         self.assertEqual(num, perpage)
+        runningSum += num
 
         # we expect a pattern of 10 pages consistently
         while True:
@@ -179,6 +210,7 @@ class PaginateTests(unittest.TestCase):
             p['page'] = page
             num = self.get_num_returned(p)
             self.assertLessEqual(num, perpage)
+            runningSum += num
             if num < perpage:
                 break
 
@@ -187,6 +219,9 @@ class PaginateTests(unittest.TestCase):
         p['page'] = page
         num = self.get_num_returned(p)
         self.assertEqual(num, 0)
+        runningSum += num
+
+        self.assertEqual(runningSum, numTotal)
 
 #######################################################
 # Test the filter functionality
@@ -199,26 +234,44 @@ class FilterTests(unittest.TestCase):
         p = copy.deepcopy(def_param)
 
         numTotal = len(get_results(p))
+        runningSum = 0
 
-        p['type'] = 'Truck'
-        res = get_results(p)
-        for r in res:
-            self.assertEqual(r['FacilityType'], 'Truck')
-            numTrucks = len(res)
+        for t in ["Truck", "Push Cart"]:
+            p['type'] = t
+            res = get_results(p)
+            numRes = len(res)
+            runningSum += numRes
+            for r in res:
+                self.assertEqual(r['FacilityType'], t)
+                self.assertLessEqual(numRes, numTotal)
 
-        p['type'] = 'Push Cart'
-        res = get_results(p)
-        for r in res:
-            self.assertEqual(r['FacilityType'], 'Push Cart')
-            numPush = len(res)
+        self.assertLessEqual(runningSum, numTotal)
 
-        self.assertLessEqual(numTrucks, numTotal)
-        self.assertLessEqual(numPush, numTotal)
+    # Verify that when we filter to permit status, we only get results
+    # with that type back. Each subset should be less than our full set
+    def testFilterType(self):
+        p = copy.deepcopy(def_param)
+
+        numTotal = len(get_results(p))
+        runningSum = 0
+
+        for s in ["APPROVED", "POSTAPPROVED", "REQUEST", "EXPIRED", "ONHOLD"]:
+            p['status'] = s
+            res = get_results(p)
+            numRes = len(res)
+            runningSum += numRes
+            for r in res:
+                self.assertEqual(r['Status'], s)
+                self.assertLessEqual(numRes, numTotal)
+
+        self.assertLessEqual(runningSum, numTotal)
 
     # Verify that when we filter by food items, we only get results
     # whose food items include the search string
     def testFilterFood(self):
         p = copy.deepcopy(def_param)
+
+        numTotal = len(get_results(p))
 
         # test we can find a common food
         p['food'] = 'Sandwich'
@@ -226,11 +279,26 @@ class FilterTests(unittest.TestCase):
         for r in res:
             good = 'Sandwich'.lower() in r['FoodItems'].lower()
             self.assertEqual(good, 1)
+        self.assertLessEqual(len(res), numTotal)
 
-        # test that a fictional non-existant food returns nothing
+        # test that a non-existant food returns nothing
         p['food'] = 'chocolate frosted sugar bombs'
         res = get_results(p)
         self.assertEqual(len(res), 0)
+
+#######################################################
+# Simple stress test of multiple calls
+#######################################################
+class StressTests(unittest.TestCase):
+
+    # TODO can I send this in parallel, or at least non-blocking?
+    def testStress(self):
+        p = copy.deepcopy(def_param)
+
+        for i in range(5):
+            r = make_call(p)
+            code = r.status_code
+            self.assertEqual(code, 200)
 
 if __name__ == '__main__':
     unittest.main()
