@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, csv, json
+import sys, csv, json, copy
 from flask import Flask, request, make_response, current_app
 from datetime import timedelta
 from functools import update_wrapper
@@ -9,6 +9,7 @@ from functools import update_wrapper
 # Local helper functions
 #############################################################
 
+# Probably not the safest solution but it is convenient
 def autoparse(v):
     try:
         vi = int(v)
@@ -33,16 +34,6 @@ def read_csv_as_json(pth):
                 row_json[col_lab[i]] = autoparse(row[i])
             res.append(row_json)
     return res
-
-def get_latlng(d):
-    return (float(d['Latitude']), float(d['Longitude']))
-
-def search_data(data, start_lat, start_lng, end_lat, end_lng):
-    return [d for d in data if (start_lat < d['Latitude'] < end_lat) and (start_lng < d['Longitude'] < end_lng)]
-
-#############################################################
-# Flask interface
-#############################################################
 
 # Helper to allow Cross-domain access
 #  Code taken from http://flask.pocoo.org/snippets/56/ , not written
@@ -87,10 +78,19 @@ def crossdomain(origin=None, methods=None, headers=None,
         return update_wrapper(wrapped_function, f)
     return decorator
 
+#############################################################
+# Flask interface
+#############################################################
+
 app = Flask(__name__)
 
 # read data from a csv, storing as a json
-data = read_csv_as_json('/home/ubuntu/foodtrucks/data.csv')
+CONST_ORIG_DATA = read_csv_as_json('/home/ubuntu/foodtrucks/data.csv')
+
+# since we can't declare data as const, lets access it through
+#  an explicit deepcopy.  Expensive but safe
+def alldata():
+    return copy.deepcopy(CONST_ORIG_DATA)
 
 @app.route('/')
 def hello_world():
@@ -112,26 +112,33 @@ def tasks():
                  ('perpage',   False, int,   50),
                  ('sort',      False, str,   'locationid')]
 
-        # check the type of mandatory-ness of our args
+        # Process our raw arguments (args) into process arguments (pargs) using our
+        #  table of expectations (eargs).
+        #  This will handle errors for missing-required-args, or malformed args
+        #  By the end of this block we have a trustworth pargs dict we can query
         pargs = dict()
         for tag, req, etype, defv in eargs:
             # store a default value if present
             if (defv != None):
                 pargs[tag] = defv
-            # If arg was passed in, check it's type
+            # If arg was passed in, check it's type by attempted casting
             if tag in args:
                 try:
                     val = etype(args[tag])
+                    # if our cast succeeded, store our processed argument
                     pargs[tag] = val
                 except:
+                    # cast failed is a malformed argument
                     return 'Argument ' + tag + ' malformed', 400
             elif req:
                 # if arg was missing but required, error
                 return 'Missing required arg ' + tag, 400
 
+        # Request a full copy of the data
+        fdata = alldata()
+
         # Search our data based on location arguments
-        fdata = search_data(data, pargs['start_lat'], pargs['start_lng'],
-                                  pargs['end_lat'], pargs['end_lng'])
+        fdata = [d for d in fdata if (pargs['start_lat'] < d['Latitude'] < pargs['end_lat']) and (pargs['start_lng'] < d['Longitude'] < pargs['end_lng'])]
 
         # Filer data based on what filters we got
         if 'type' in pargs:
