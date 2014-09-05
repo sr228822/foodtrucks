@@ -1,6 +1,6 @@
 var map;
 
-var endpoint = 'http://localhost:5000/api/v1/foodtrucks'
+var endpoint = 'http://ec2.sfflux.com/api/v1/foodtrucks'
 
 // List of all gmap markers
 var markers = [];
