@@ -1,5 +1,5 @@
 var map;
-
+var query = "";
 var endpoint = 'http://ec2.sfflux.com/api/v1/foodtrucks'
 
 // List of all gmap markers
@@ -20,16 +20,14 @@ function refreshMap(force) {
     var sw = bounds.getSouthWest();
     console.log("Refresh map " + ne.lat() + "," + ne.lng());
 
-    // TODO get current search term
-
-    // make an api request with bounds and search terms TODO fill in query
-    apiRequest(sw.lat(), sw.lng(), ne.lat(), ne.lng(), "");
+    // make an api request with bounds and search terms
+    apiRequest(sw.lat(), sw.lng(), ne.lat(), ne.lng(), query);
 }
 
 /* Make a call to our backend api */
 function apiRequest(start_lat, start_lng, end_lat, end_lng, query) {
     $(document).ready(function() {
-        $.get(endpoint + "?start_lat=" + start_lat + "&start_lng=" + start_lng + "&end_lat=" + end_lat + "&end_lng=" + end_lng + "&perpage=5000&query=" + query ,function(data) {parseAndDraw(data);});
+        $.get(endpoint + "?start_lat=" + start_lat + "&start_lng=" + start_lng + "&end_lat=" + end_lat + "&end_lng=" + end_lng + "&perpage=5000&food=" + query ,function(data) {parseAndDraw(data);});
     });
 }
 
@@ -58,6 +56,13 @@ function parseAndDraw(data)
 
     // Draw all markers on the map
     setMarkersMap(markers, map);
+}
+
+function processQuery()
+{
+    query = document.getElementById('foodquery').value
+    console.log("processing query " + query);
+    refreshMap();
 }
 
 /* Initialize the google map object */

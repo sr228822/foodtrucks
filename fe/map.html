@@ -12,6 +12,9 @@
     <script type="text/javascript" src="./logic.js"></script>
   </head>
   <body>
+    Search For Food:
+    <input type="text" id="foodquery" onkeydown="if (event.keyCode == 13) document.getElementById('btnSearch').click()"/>
+    <input type="button" id="btnSearch" value="Search" onclick="processQuery();" />
     <div id="map-canvas"/>
   </body>
 </html>
