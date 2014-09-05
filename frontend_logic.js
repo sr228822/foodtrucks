@@ -22,25 +22,41 @@ function refreshMap(force) {
 
     // TODO get current search term
 
-    // TODO make an api request with bounds and search terms
+    // make an api request with bounds and search terms TODO fill in query
     apiRequest(sw.lat(), sw.lng(), ne.lat(), ne.lng(), "");
 }
 
+/* Make a call to our backend api */
 function apiRequest(start_lat, start_lng, end_lat, end_lng, query) {
     $(document).ready(function() {
-        $.get(endpoint + "?start_lat=" + start_lat + "&start_lng=" + start_lng + "&end_lat=" + end_lat + "&end_lng=" + end_lng + "&query=" + query ,function(data) {drawApiResults(data);});
+        $.get(endpoint + "?start_lat=" + start_lat + "&start_lng=" + start_lng + "&end_lat=" + end_lat + "&end_lng=" + end_lng + "&query=" + query ,function(data) {parseAndDraw(data);});
     });
 }
 
-function drawApiResults(data)
+/* Called when we get our data back.  Parse the json results and draw them onto our map */
+function parseAndDraw(data)
 {
     // Clear the previous markers
     setMarkersMap(markers, null);
-    markers = null;
+    markers = [];
 
-    // TODO parse data-json into a list of markers
+    // parse data-json into a list of markers
+    var js = JSON.parse(data);
+    var num = js.num_returned;
+    for(var i=0; i < num; i++) {
+        var truck = js.results[i];
+        var name = truck.Applicant;
+        var latlng = new google.maps.LatLng(parseFloat(truck.Latitude), parseFloat(truck.Longitude));
+        var marker = new google.maps.Marker({
+            position: latlng,
+            title:name,
+        });
+        // TODO attach a pop-up with more info on this truck?
+        markers.push(marker);
+    }
 
-    // TODO add those markers to markers list, draw them on map
+    // Draw all markers on the map
+    setMarkersMap(markers, map);
 }
 
 /* Initialize the google map object */
@@ -51,7 +67,7 @@ function initialize() {
     };
     map = new google.maps.Map(document.getElementById("map-canvas"),mapOptions);
 
-    // TODO add a callback to refresh map when the bounds change
+    // callback to refresh map when the bounds change
     google.maps.event.addListener(map, 'idle', function(event) {
         refreshMap();
     });
