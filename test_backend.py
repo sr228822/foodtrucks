@@ -162,7 +162,7 @@ class SortTests(unittest.TestCase):
 
         lastname = ""
         for r in res:
-            thisname = r["Applicant"]
+            thisname = r["applicant"]
             # duplicate names are okay
             self.assertGreaterEqual(thisname, lastname)
             lastname = thisname
@@ -242,7 +242,7 @@ class FilterTests(unittest.TestCase):
             numRes = len(res)
             runningSum += numRes
             for r in res:
-                self.assertEqual(r['FacilityType'], t)
+                self.assertEqual(r['facilitytype'], t)
                 self.assertLessEqual(numRes, numTotal)
 
         self.assertLessEqual(runningSum, numTotal)
@@ -261,7 +261,7 @@ class FilterTests(unittest.TestCase):
             numRes = len(res)
             runningSum += numRes
             for r in res:
-                self.assertEqual(r['Status'], s)
+                self.assertEqual(r['status'], s)
                 self.assertLessEqual(numRes, numTotal)
 
         self.assertLessEqual(runningSum, numTotal)
@@ -277,7 +277,7 @@ class FilterTests(unittest.TestCase):
         p['food'] = 'Sandwich'
         res = get_results(p)
         for r in res:
-            good = 'Sandwich'.lower() in r['FoodItems'].lower()
+            good = 'Sandwich'.lower() in r['fooditems'].lower()
             self.assertEqual(good, 1)
         self.assertLessEqual(len(res), numTotal)
 

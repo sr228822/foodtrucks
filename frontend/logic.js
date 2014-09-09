@@ -42,16 +42,16 @@ function parseAndDraw(data)
     console.log("Got " + num + " trucks");
     for(var i=0; i < num; i++) {
         var truck = js.results[i];
-        var name = truck.Applicant;
-        var latlng = new google.maps.LatLng(parseFloat(truck.Latitude), parseFloat(truck.Longitude));
+        var name = truck.applicant;
+        var latlng = new google.maps.LatLng(parseFloat(truck.latitude), parseFloat(truck.longitude));
         var marker = new google.maps.Marker({
             position: latlng,
             title:name,
         });
 
         var contentStr = '<h3>' + name + '</h3>' +
-                      truck.Address + '<br>' +
-                      truck.FoodItems;
+                      truck.address + '<br>' +
+                      truck.fooditems;
         var infowindow = new google.maps.InfoWindow({
             content: contentStr
         });
