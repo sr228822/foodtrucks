@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, csv, json, copy, urllib2
+import sys, csv, json, copy, urllib2, datetime
 from flask import Flask, request, make_response, current_app
 from datetime import timedelta
 from functools import update_wrapper
@@ -9,8 +9,13 @@ from functools import update_wrapper
 # Local helper functions
 #############################################################
 
+# Pull in and read refreshed data from the sfgov.org website
 def read_fresh_data():
-    resp = urllib2.urlopen('http://data.sfgov.org/resource/rqzj-sfat.json').read()
+    try:
+        resp = urllib2.urlopen('http://data.sfgov.org/resource/rqzj-sfat.json').read()
+    except:
+        return None
+
     dat = json.loads(resp)
     seen = []
     res = []
@@ -91,10 +96,24 @@ app = Flask(__name__)
 
 # on launch, pull fresh data from sfgov.org
 CONST_ORIG_DATA = read_fresh_data()
+LAST_REFRESH  = datetime.datetime.now()
 
 # since we can't declare data as const, lets access it through
-#  an explicit deepcopy.  Expensive but safe
+#  an explicit deepcopy.  Expensive but safe.  This function also
+#  takes care of refreshing the data if it is more than 1 day old
 def alldata():
+    global CONST_ORIG_DATA
+    global LAST_REFRESH
+
+    now = datetime.datetime.now()
+    age = (now - LAST_REFRESH).total_seconds()
+    if age > (24 * 60 * 60):
+        print str(age) + ' seconds since refresh, pulling new data'
+        newdata = read_fresh_data()
+        if newdata:
+            CONST_ORIG_DATA = newdata
+            LAST_REFRESH = now
+
     return copy.deepcopy(CONST_ORIG_DATA)
 
 @app.route('/')
