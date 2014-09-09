@@ -9,30 +9,36 @@ from functools import update_wrapper
 # Local helper functions
 #############################################################
 
-# Probably not the safest solution but it is convenient
-def autoparse(v):
-    try:
-        vi = int(v)
-        return vi
-    except:
-        pass
-    try:
-        vf = float(v)
-        return vf
-    except:
-        pass
-    return v
-
-def read_csv_as_json(pth):
+def read_fresh_data():
+    f = open('./data.json')
+    dat = json.loads(f.read())
+    f.close()
+    seen = []
     res = []
-    with open(pth, 'rU') as f:
-        reader = csv.reader(f)
-        col_lab = reader.next()
-        for row in reader:
-            row_json = dict()
-            for i in range(len(col_lab)):
-                row_json[col_lab[i]] = autoparse(row[i])
-            res.append(row_json)
+    for chunk in dat:
+        processed = dict()
+
+        # Throw out duplicated object-id's
+        lid = chunk['objectid']
+        if lid in seen:
+            continue
+        seen.append(lid)
+        processed['locationid'] = lid
+
+        # To be a valid entry, we need a valid lat/lng
+        try:
+            processed['latitude'] = float(chunk['latitude'])
+            processed['longitude'] = float(chunk['longitude'])
+        except:
+            continue
+
+        # Copy the remaining fields we care about
+        for key in ['applicant', 'address', 'facilitytype', 'status', 'locationdescription', 'fooditems']:
+            if key in chunk:
+                processed[key] = chunk[key]
+
+        res.append(processed)
+
     return res
 
 # Helper to allow Cross-domain access
@@ -84,8 +90,8 @@ def crossdomain(origin=None, methods=None, headers=None,
 
 app = Flask(__name__)
 
-# read data from a csv, storing as a json
-CONST_ORIG_DATA = read_csv_as_json('/home/ubuntu/foodtrucks/data.csv')
+# on launch, pull fresh data from sfgov.org
+CONST_ORIG_DATA = read_fresh_data()
 
 # since we can't declare data as const, lets access it through
 #  an explicit deepcopy.  Expensive but safe
@@ -138,23 +144,23 @@ def tasks():
         fdata = alldata()
 
         # Search our data based on location arguments
-        fdata = [d for d in fdata if (pargs['start_lat'] < d['Latitude'] < pargs['end_lat']) and (pargs['start_lng'] < d['Longitude'] < pargs['end_lng'])]
+        fdata = [d for d in fdata if (pargs['start_lat'] < d['latitude'] < pargs['end_lat']) and (pargs['start_lng'] < d['longitude'] < pargs['end_lng'])]
 
         # Filer data based on what filters we got
         if 'type' in pargs:
-            fdata = [d for d in fdata if d['FacilityType'] == pargs['type']]
+            fdata = [d for d in fdata if d['facilitytype'] == pargs['type']]
 
         if 'status' in pargs:
-            fdata = [d for d in fdata if d['Status'] == pargs['status']]
+            fdata = [d for d in fdata if d['status'] == pargs['status']]
 
         if 'food' in pargs:
-            fdata = [d for d in fdata if pargs['food'].lower() in d['FoodItems'].lower()]
+            fdata = [d for d in fdata if 'fooditems' in d and pargs['food'].lower() in d['fooditems'].lower()]
 
         # Sort.  We have stored a default sort so this should be fine
         if pargs['sort'] == 'locationid':
             fdata = sorted(fdata, key=lambda d: d['locationid'])
         elif pargs['sort'] == 'alphabetic':
-            fdata = sorted(fdata, key=lambda d: d['Applicant'])
+            fdata = sorted(fdata, key=lambda d: d['applicant'])
         else:
             return 'Unrecognized sort option ' + pargs['sort'], 400
 
