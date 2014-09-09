@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, csv, json, copy
+import sys, csv, json, copy, urllib2
 from flask import Flask, request, make_response, current_app
 from datetime import timedelta
 from functools import update_wrapper
@@ -10,9 +10,8 @@ from functools import update_wrapper
 #############################################################
 
 def read_fresh_data():
-    f = open('./data.json')
-    dat = json.loads(f.read())
-    f.close()
+    resp = urllib2.urlopen('http://data.sfgov.org/resource/rqzj-sfat.json').read()
+    dat = json.loads(resp)
     seen = []
     res = []
     for chunk in dat:
