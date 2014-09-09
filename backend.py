@@ -95,14 +95,14 @@ def crossdomain(origin=None, methods=None, headers=None,
 app = Flask(__name__)
 
 # on launch, pull fresh data from sfgov.org
-CONST_ORIG_DATA = read_fresh_data()
+FULL_DATA = read_fresh_data()
 LAST_REFRESH  = datetime.datetime.now()
 
 # since we can't declare data as const, lets access it through
 #  an explicit deepcopy.  Expensive but safe.  This function also
 #  takes care of refreshing the data if it is more than 1 day old
 def alldata():
-    global CONST_ORIG_DATA
+    global FULL_DATA
     global LAST_REFRESH
 
     now = datetime.datetime.now()
@@ -111,10 +111,10 @@ def alldata():
         print str(age) + ' seconds since refresh, pulling new data'
         newdata = read_fresh_data()
         if newdata:
-            CONST_ORIG_DATA = newdata
+            FULL_DATA = newdata
             LAST_REFRESH = now
 
-    return copy.deepcopy(CONST_ORIG_DATA)
+    return copy.deepcopy(FULL_DATA)
 
 @app.route('/')
 def hello_world():
@@ -182,12 +182,13 @@ def tasks():
         else:
             return 'Unrecognized sort option ' + pargs['sort'], 400
 
-        # Paginate, again we have default pagination
+        # Paginate, we have default pagination in place
         pagestart = pargs['page'] * pargs['perpage']
         pageend = pagestart + pargs['perpage']
 
         rdata = fdata[pagestart:pageend]
 
+        # Format result as json, add some meta tags about the number of results
         res = dict()
         res['num_found'] = len(fdata)
         res['num_returned'] = len(rdata)
